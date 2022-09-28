@@ -1,8 +1,8 @@
-## Pulse Faculty Data Scraper 
+## Pulse Facility Occupance Discord Bot 
 
-Just a rewrite of what I wrote in python, fetches data from the API used by the macrec website (found out about the API from the js files of the website).
+Refer `app.py`
 
-Didn't bother to create embeds yet, but the goal was to write code in rust and use asynchronous functions. I'll add tests and CI/CD stuff when exams are over!
+tldr, reverse engineered the school website and converted the facility occupance data to a discord bot (:
 
-Performance gains? Of course
-Rust is my go to language now!
+there's a rust version, but ignore that for now. never got time time finish that
+![](assets/screenshot.png)
