@@ -13,6 +13,7 @@ bot = commands.Bot(
 
 doing = False
 
+
 @bot.event
 async def on_ready():
     print("Bot is ready!")
@@ -57,6 +58,27 @@ async def pulse(ctx):
             name="Track Pulse", value=f"`{results[2][0]} | {results[2][1]}`"
         )
         await ctx.send(embed=embed)
+
+
+@bot.command()
+async def library(ctx):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            "https://library.mcmaster.ca/php/occupancy-spaces.php"
+        ) as r:
+            res = await r.text()
+            soup = BeautifulSoup(res, "html.parser")
+            data = list(
+                map(lambda x: x.get_text(), soup.find_all("p", {"class": "mt-2"}))
+            )
+            formatted_data = "\n".join(data)
+            embed = discord.Embed(
+                title="Library Stats",
+                description=f"`Live Stats! More live than the actual website`\n\n```{formatted_data}```",
+                color=0x00FF00,
+                timestamp=datetime.datetime.utcnow(),
+            )
+            await ctx.send(embed=embed)
 
 
 @bot.command(name="runutil")
