@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "mcmaster-bot"
+version = "0.1.0"
+description = ""
+authors = ["Vidhan Bhatt <me@vidhan.io>"]
+readme = "README.md"
+packages = [{include = "mcmaster_bot"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+asyncio = "^3.4.3"
+discord = "^2.0.0"
+beautifulsoup4 = "^4.11.1"
+aiohttp = "^3.8.3"
+
+[tool.poetry.group.dev.dependencies]
+black = "^22.10.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

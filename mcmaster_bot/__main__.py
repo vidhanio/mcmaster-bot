@@ -1,9 +1,13 @@
 import asyncio
+import datetime
+import os
+import sys
+from typing import Any, Coroutine
+
+import aiohttp
 import discord
 from bs4 import BeautifulSoup
-import aiohttp
 from discord.ext import commands
-import datetime
 
 bot = commands.Bot(
     command_prefix=commands.when_mentioned_or("!"),
@@ -20,11 +24,11 @@ async def on_ready():
 
 
 @bot.command()
-async def pulse(ctx):
+async def pulse(ctx: commands.Context[Any]):
     """
     Reverse engineer macreconline.ca to get API endpoints :p
     """
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession() as _:
         payloads = [
             {
                 "facilityId": "0986c0ef-0cc6-4659-9f7c-925af22a98c6",
@@ -39,7 +43,7 @@ async def pulse(ctx):
                 "occupancyDisplayType": "00000000-0000-0000-0000-000000004488",
             },
         ]
-        tasks = []
+        tasks: list[Coroutine[Any, Any, tuple[str, str]]] = []
         for payload in payloads:
             tasks.append(fetch(payload))
         results = await asyncio.gather(*tasks)
@@ -61,7 +65,7 @@ async def pulse(ctx):
 
 
 @bot.command()
-async def library(ctx):
+async def library(ctx: commands.Context[Any]):
     async with aiohttp.ClientSession() as session:
         async with session.get(
             "https://library.mcmaster.ca/php/occupancy-spaces.php"
@@ -82,7 +86,7 @@ async def library(ctx):
 
 
 @bot.command(name="runutil")
-async def runutil(ctx):
+async def runutil(ctx: commands.Context[Any]):
     global doing
     if doing:
         return await ctx.send("`Session already in progress.`")
@@ -101,7 +105,7 @@ async def runutil(ctx):
             "occupancyDisplayType": "00000000-0000-0000-0000-000000004488",
         },
     ]
-    tasks = []
+    tasks: list[Coroutine[Any, Any, tuple[str, str]]] = []
     for payload in payloads:
         tasks.append(fetch(payload))
     results = await asyncio.gather(*tasks)
@@ -118,10 +122,10 @@ async def runutil(ctx):
         await msg.edit(embed=new_embed)
 
 
-def create_embed(results):
+def create_embed(results: list[tuple[str, str]]):
     embed = discord.Embed(
         title="The Pulse Stats",
-        description=f"`Live Stats! More live than the actual website\nUpdate number: {update}`",
+        description=f"`Live Stats! More live than the actual website\nUpdate number: n`",
         color=0x00FF00,
         timestamp=datetime.datetime.utcnow(),
     )
@@ -134,19 +138,35 @@ def create_embed(results):
     return embed
 
 
-async def fetch(payload):
+async def fetch(payload: Any):
     async with aiohttp.ClientSession() as session:
         async with session.post(
             "https://macreconline.ca/FacilityOccupancy/GetFacilityData", data=payload
         ) as r:
             res = await r.text()
             soup = BeautifulSoup(res, "html.parser")
-            max_cap = soup.find("p", {"class": "max-occupancy"}).get_text()
-            occupancy = soup.find("p", {"class": "occupancy-count"}).get_text()
+
+            if (s := soup.find("p", {"class": "max-occupancy"})) is None:
+                return "error", "error"
+
+            max_cap = s.get_text()
+
+            if (s := soup.find("p", {"class": "occupancy-count"})) is None:
+                return "error", "error"
+
+            occupancy = s.get_text()
+
             return (occupancy, max_cap[15:])
 
 
-bot.run("BOT_TOKEN")
+TOKEN = (
+    t
+    if (t := os.getenv("TOKEN")) is not None
+    else sys.exit("environment variable TOKEN not set")
+)
+
+bot.run(TOKEN)
+
 """
 @infiniteregrets (Mehul)
 https://github.com/infiniteregrets
