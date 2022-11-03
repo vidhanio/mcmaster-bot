@@ -2,7 +2,7 @@ import asyncio
 import datetime
 import os
 import sys
-from typing import Any, Coroutine
+from typing import Coroutine
 
 import aiohttp
 import discord
@@ -19,12 +19,12 @@ doing = False
 
 
 @bot.event
-async def on_ready():
+async def on_ready() -> None:
     print("Bot is ready!")
 
 
 @bot.command()
-async def pulse(ctx: commands.Context[Any]):
+async def pulse(ctx: commands.Context[commands.Bot]) -> None:
     """
     Reverse engineer macreconline.ca to get API endpoints :p
     """
@@ -43,7 +43,7 @@ async def pulse(ctx: commands.Context[Any]):
                 "occupancyDisplayType": "00000000-0000-0000-0000-000000004488",
             },
         ]
-        tasks: list[Coroutine[Any, Any, tuple[str, str]]] = []
+        tasks: list[Coroutine[None, None, tuple[str, str]]] = []
         for payload in payloads:
             tasks.append(fetch(payload))
         results = await asyncio.gather(*tasks)
@@ -65,7 +65,7 @@ async def pulse(ctx: commands.Context[Any]):
 
 
 @bot.command()
-async def library(ctx: commands.Context[Any]):
+async def library(ctx: commands.Context[commands.Bot]) -> None:
     async with aiohttp.ClientSession() as session:
         async with session.get(
             "https://library.mcmaster.ca/php/occupancy-spaces.php"
@@ -86,7 +86,7 @@ async def library(ctx: commands.Context[Any]):
 
 
 @bot.command(name="runutil")
-async def runutil(ctx: commands.Context[Any]):
+async def runutil(ctx: commands.Context[commands.Bot]) -> discord.Message:
     global doing
     if doing:
         return await ctx.send("`Session already in progress.`")
@@ -105,7 +105,7 @@ async def runutil(ctx: commands.Context[Any]):
             "occupancyDisplayType": "00000000-0000-0000-0000-000000004488",
         },
     ]
-    tasks: list[Coroutine[Any, Any, tuple[str, str]]] = []
+    tasks: list[Coroutine[None, None, tuple[str, str]]] = []
     for payload in payloads:
         tasks.append(fetch(payload))
     results = await asyncio.gather(*tasks)
@@ -122,7 +122,7 @@ async def runutil(ctx: commands.Context[Any]):
         await msg.edit(embed=new_embed)
 
 
-def create_embed(results: list[tuple[str, str]]):
+def create_embed(results: list[tuple[str, str]]) -> discord.Embed:
     embed = discord.Embed(
         title="The Pulse Stats",
         description=f"`Live Stats! More live than the actual website\nUpdate number: n`",
@@ -138,7 +138,7 @@ def create_embed(results: list[tuple[str, str]]):
     return embed
 
 
-async def fetch(payload: Any):
+async def fetch(payload: dict[str, str]) -> tuple[str, str]:
     async with aiohttp.ClientSession() as session:
         async with session.post(
             "https://macreconline.ca/FacilityOccupancy/GetFacilityData", data=payload
